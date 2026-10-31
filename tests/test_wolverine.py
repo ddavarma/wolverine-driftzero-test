@@ -58,7 +58,7 @@ def test_json_validated_response(mocker, chat_completion_response, nb_retry, fai
         response = file.read()
     # Mock the openAi chat completion API call
     mocker.patch(
-        "openai.ChatCompletion.create",
+        "openai.resources.chat.completions.Completions.create",
         return_value=mock_open_ai_response_object(mocker=mocker, content=response))
     # ChatCompletion returned an invalid response
     if fail:

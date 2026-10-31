@@ -13,7 +13,17 @@ from dotenv import load_dotenv
 
 # Set up the OpenAI API
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+
+
+def _get_client():
+    """
+    Build an explicit v2 client, reading the key from the environment.
+
+    Constructed lazily (never at import time) so importing wolverine keeps
+    working when OPENAI_API_KEY is unset; a missing key only fails when an
+    API call is actually attempted.
+    """
+    return openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Default model is GPT-4
 DEFAULT_MODEL = os.environ.get("DEFAULT_MODEL", "gpt-4")
@@ -56,7 +66,7 @@ def json_validated_response(
     """
     json_response = {}
     if nb_retry != 0:
-        response = openai.ChatCompletion.create(
+        response = _get_client().chat.completions.create(
             model=model,
             messages=messages,
             temperature=0.5,
@@ -195,7 +205,7 @@ def apply_changes(file_path: str, changes: List, confirm: bool = False):
 
 
 def check_model_availability(model):
-    available_models = [x["id"] for x in openai.Model.list()["data"]]
+    available_models = [m.id for m in _get_client().models.list().data]
     if model not in available_models:
         print(
             f"Model {model} is not available. Perhaps try running with "

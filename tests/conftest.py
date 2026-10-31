@@ -9,6 +9,13 @@ import tempfile
 TEST_FILES_DIR = os.path.join(os.path.dirname(__file__), "test_files")
 
 
+@pytest.fixture(autouse=True)
+def dummy_openai_key(monkeypatch):
+    # v2 builds an explicit client that requires a key at construction;
+    # tests mock the resource methods so no network is touched.
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test-dummy-key")
+
+
 @pytest.fixture(scope='function')
 def temp_file():
     # Create a temporary file
